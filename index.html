@@ -179,11 +179,20 @@
             container = Element('gamesContainer')
             container.inner_html = ''
             
-            # Get all .py files in the current directory
-            current_dir = Path('.')
-            py_files = list(current_dir.glob('*.py'))
+            # List of Python game files to check
+            game_files = ['rockpaperscissor.py', 'snake.py', 'tic_tac_toe.py', 'guessing_game.py', 'number_game.py']
             
-            if not py_files:
+            # Filter files that exist by trying to fetch them
+            available_games = []
+            for filename in game_files:
+                try:
+                    response = await js.fetch(filename)
+                    if response.ok:
+                        available_games.append(filename)
+                except:
+                    pass
+            
+            if not available_games:
                 container.inner_html = '''
                     <div class="no-games">
                         <i class="fas fa-inbox" style="font-size: 2em; color: #ccc; margin-bottom: 10px;"></i>
@@ -194,8 +203,7 @@
             
             # Create game cards for each Python file
             html = ''
-            for py_file in py_files:
-                filename = py_file.name
+            for filename in available_games:
                 game_name = filename.replace('.py', '').replace('_', ' ')
                 icon = get_icon(game_name)
                 
