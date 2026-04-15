@@ -3,300 +3,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto Python Widgets</title>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.26.1/full/pyodide.js"></script>
+    <title>Python Games</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
-        .header {
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        h1 {
             text-align: center;
             color: white;
-            margin-bottom: 40px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 50px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
-        .instructions {
-            background: rgba(255,255,255,0.95);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        .widgets-container {
+
+        .games-grid {
             display: grid;
-            gap: 20px;
-            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
         }
-        .widget {
-            background: rgba(255,255,255,0.95);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
+
+        .game-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             cursor: pointer;
-            border: 3px solid transparent;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid transparent;
         }
-        .widget:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            border-color: #4a90e2;
+
+        .game-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+            border-color: #667eea;
         }
-        .widget-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+
+        .game-card i {
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .game-card h2 {
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            text-transform: capitalize;
+        }
+
+        .game-card p {
+            color: #666;
+            font-size: 0.9em;
             margin-bottom: 20px;
         }
-        .widget-name {
-            font-weight: bold;
-            color: #333;
-            font-size: 18px;
-            flex: 1;
-        }
-        .widget-status {
-            font-size: 12px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: 500;
-        }
-        .status-ready { background: #d4edda; color: #155724; }
-        .status-running { background: #fff3cd; color: #856404; }
-        .status-error { background: #f8d7da; color: #721c24; }
-        .status-success { background: #d1ecf1; color: #0c5460; }
-        .run-btn {
-            background: linear-gradient(45deg, #4a90e2, #357abd);
+
+        .play-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
+            padding: 12px 30px;
             border-radius: 25px;
-            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
             cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
-            font-size: 14px;
+            transition: transform 0.2s ease;
         }
-        .run-btn:hover { background: linear-gradient(45deg, #357abd, #2c5aa0); }
-        .run-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        .widget-output {
-            min-height: 180px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 15px;
-            background: #f8f9fa;
-            font-family: 'Courier New', monospace;
-            white-space: pre-wrap;
-            overflow: auto;
-            font-size: 13px;
-            line-height: 1.5;
-            max-height: 300px;
-        }
-        .no-files {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 60px 20px;
-            color: rgba(255,255,255,0.8);
-            font-size: 18px;
-        }
-        .refresh-btn {
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 20px;
-            transition: all 0.3s;
-        }
-        .refresh-btn:hover {
-            background: rgba(255,255,255,0.3);
+
+        .play-btn:hover {
             transform: scale(1.05);
+        }
+
+        .play-btn:active {
+            transform: scale(0.95);
+        }
+
+        .output-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .output-title {
+            color: #333;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        #output {
+            color: #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-weight: bold;
+            padding: 20px;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid #c33;
+        }
+
+        .no-games {
+            background: white;
+            padding: 50px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            color: #666;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🚀 Auto Python Widgets</h1>
-        <p>Put .py files in the same folder as this HTML file. Click any widget to run!</p>
-    </div>
+    <div class="container">
+        <h1><i class="fas fa-gamepad"></i> Python Games</h1>
+        
+        <div class="games-grid" id="gamesContainer">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading games...
+            </div>
+        </div>
 
-    <div class="instructions">
-        <h3>📁 How it works:</h3>
-        <ol style="margin: 0; padding-left: 20px;">
-            <li>Save this HTML file (e.g., <code>widgets.html</code>)</li>
-            <li>Add your <code>.py</code> files in the <strong>same folder</strong></li>
-            <li>Open <code>widgets.html</code> in browser</li>
-            <li>Click any widget to run the Python code!</li>
-        </ol>
-    </div>
-
-    <div class="widgets-container" id="widgetsContainer">
-        <div class="no-files">
-            📂 No Python files found!<br>
-            Add .py files to this folder and refresh.
-            <br><br>
-            <button class="refresh-btn" onclick="loadPythonFiles()">🔄 Refresh</button>
+        <div class="output-container" id="outputSection" style="display: none;">
+            <div class="output-title">Game Output:</div>
+            <div id="output"></div>
+            <button class="play-btn" id="clearBtn" style="margin-top: 20px; width: 100%; background: #999;">Clear Output</button>
         </div>
     </div>
 
-    <script>
-        let pyodide;
-        let isPyodideReady = false;
+    <py-script>
+        import os
+        import sys
+        from pathlib import Path
 
-        // Initialize Pyodide
-        async function initializePyodide() {
-            pyodide = await loadPyodide({
-                indexURL: "https://cdn.jsdelivr.net/pyodide/v0.26.1/full/"
-            });
-            await pyodide.loadPackage(['numpy', 'matplotlib', 'pandas', 'plotly']);
-            isPyodideReady = true;
-            console.log("✅ Pyodide ready with numpy, pandas, matplotlib, plotly!");
-        }
-
-        initializePyodide();
-
-        async function loadPythonFiles() {
-            const widgetsContainer = document.getElementById('widgetsContainer');
-            widgetsContainer.innerHTML = '<div class="no-files">🔄 Loading files...</div>';
-
-            try {
-                // Get all .py files from same directory
-                const response = await fetch('list.pyfiles');
-                const files = await response.json();
-                
-                if (files.length === 0) {
-                    widgetsContainer.innerHTML = `
-                        <div class="no-files">
-                            📂 No Python files found!<br>
-                            Add .py files to this folder and refresh.
-                            <br><br>
-                            <button class="refresh-btn" onclick="loadPythonFiles()">🔄 Refresh</button>
-                        </div>
-                    `;
-                    return;
-                }
-
-                // Load and create widgets
-                const widgets = [];
-                for (const filename of files) {
-                    try {
-                        const codeResponse = await fetch(filename);
-                        const code = await codeResponse.text();
-                        const widget = createWidget(filename, code);
-                        widgets.push(widget);
-                    } catch (e) {
-                        console.error(`Failed to load ${filename}:`, e);
-                    }
-                }
-
-                // Display widgets
-                widgetsContainer.innerHTML = '';
-                widgets.forEach(widget => widgetsContainer.appendChild(widget));
-
-            } catch (error) {
-                widgetsContainer.innerHTML = `
-                    <div class="no-files">
-                        ❌ Error loading files: ${error.message}<br>
-                        Make sure you're serving files locally (use Live Server or Python http.server).
-                        <br><br>
-                        <button class="refresh-btn" onclick="loadPythonFiles()">🔄 Retry</button>
+        async def load_games():
+            """Load available Python game files from the current directory"""
+            container = Element('gamesContainer')
+            container.inner_html = ''
+            
+            # Get all .py files in the current directory
+            current_dir = Path('.')
+            py_files = list(current_dir.glob('*.py'))
+            
+            if not py_files:
+                container.inner_html = '''
+                    <div class="no-games">
+                        <i class="fas fa-inbox" style="font-size: 2em; color: #ccc; margin-bottom: 10px;"></i>
+                        <p>No Python games found in this directory</p>
                     </div>
-                `;
-            }
-        }
-
-        function createWidget(filename, code) {
-            const widget = document.createElement('div');
-            widget.className = 'widget';
-            widget.innerHTML = `
-                <div class="widget-header">
-                    <div class="widget-name">${filename}</div>
-                    <span class="widget-status status-ready">Ready</span>
-                </div>
-                <button class="run-btn" onclick="runWidget(event)">▶️ Run</button>
-                <div class="widget-output">Click "Run" to execute this Python code...</div>
-            `;
-            widget._code = code;
-            return widget;
-        }
-
-        async function runWidget(event) {
-            const widget = event.target.closest('.widget');
-            const output = widget.querySelector('.widget-output');
-            const status = widget.querySelector('.widget-status');
-            const runBtn = event.target;
-
-            // Update UI
-            status.textContent = 'Running...';
-            status.className = 'widget-status status-running';
-            runBtn.disabled = true;
-            runBtn.textContent = '⏳ Running...';
-            output.textContent = 'Running Python code...\n';
-
-            if (!isPyodideReady) {
-                output.textContent += '\n❌ Python environment still loading...\n';
-                resetWidget(widget, status, runBtn, output);
-                return;
-            }
-
-            try {
-                // Capture output
-                pyodide.runPython(`
-                    import sys
-                    from io import StringIO
-                    old_stdout = sys.stdout
-                    old_stderr = sys.stderr
-                    sys.stdout = mystdout = StringIO()
-                    sys.stderr = mystderr = StringIO()
-                `);
-
-                // Run code
-                pyodide.runPython(widget._code);
-
-                // Get output
-                const stdout = pyodide.runPython('mystdout.getvalue()');
-                const stderr = pyodide.runPython('mystderr.getvalue()');
+                '''
+                return
+            
+            # Create game cards for each Python file
+            html = ''
+            for py_file in py_files:
+                filename = py_file.name
+                game_name = filename.replace('.py', '').replace('_', ' ')
+                icon = get_icon(game_name)
                 
-                output.textContent = stdout || '✅ Code executed successfully (no output)\n';
-                if (stderr) {
-                    output.textContent += `\nWarnings/Errors:\n${stderr}`;
-                    status.textContent = 'Warnings';
-                    status.className = 'widget-status status-error';
-                } else {
-                    status.textContent = 'Success';
-                    status.className = 'widget-status status-success';
-                }
+                html += f'''
+                    <div class="game-card">
+                        <i class="fas {icon}"></i>
+                        <h2>{game_name}</h2>
+                        <p>{filename}</p>
+                        <button class="play-btn" onclick="play_game('{filename}')">Play Game</button>
+                    </div>
+                '''
+            
+            container.inner_html = html
 
-            } catch (error) {
-                output.textContent += `\n❌ Error: ${error.message}\n`;
-                status.textContent = 'Error';
-                status.className = 'widget-status status-error';
+        def get_icon(game_name):
+            """Return appropriate icon based on game name"""
+            icons = {
+                'rockpaperscissor': 'fa-hand-fist',
+                'snake': 'fa-apple-alt',
+                'tic tac toe': 'fa-table',
+                'guess': 'fa-brain',
+                'number': 'fa-dice',
             }
+            
+            for key, icon in icons.items():
+                if key in game_name.lower():
+                    return icon
+            
+            return 'fa-star'
 
-            resetWidget(widget, status, runBtn, output);
-        }
+        async def play_game(filename):
+            """Execute the selected game"""
+            output_section = Element('outputSection')
+            output_div = Element('output')
+            
+            # Show output section
+            output_section.attributes['style'] = 'display: block;'
+            output_div.inner_html = f'<div class="loading"><i class="fas fa-spinner fa-spin"></i> Running {filename}...</div>'
+            
+            try:
+                # Read and execute the Python file
+                with open(filename, 'r') as f:
+                    code = f.read()
+                
+                # Capture output
+                from io import StringIO
+                old_stdout = sys.stdout
+                sys.stdout = StringIO()
+                
+                try:
+                    exec(code, {'__name__': '__main__'})
+                    output = sys.stdout.getvalue()
+                except Exception as e:
+                    output = f'Error: {str(e)}'
+                finally:
+                    sys.stdout = old_stdout
+                
+                if output.strip():
+                    output_div.inner_html = output.replace('<', '&lt;').replace('>', '&gt;')
+                else:
+                    output_div.inner_html = '<em>Game executed with no output</em>'
+                    
+            except FileNotFoundError:
+                output_div.inner_html = f'<div class="error">Error: Could not find file {filename}</div>'
+            except Exception as e:
+                output_div.inner_html = f'<div class="error">Error: {str(e)}</div>'
 
-        function resetWidget(widget, status, runBtn, output) {
-            setTimeout(() => {
-                status.textContent = 'Ready';
-                status.className = 'widget-status status-ready';
-                runBtn.disabled = false;
-                runBtn.textContent = '▶️ Run';
-            }, 2000);
-        }
+        # Make play_game globally accessible
+        from pyodide import create_proxy
+        import js
+        js.globalThis.play_game = create_proxy(play_game)
 
-        // Auto-load on page load
-        window.addEventListener('load', () => {
-            setTimeout(loadPythonFiles, 1000);
-        });
-    </script>
+        # Clear button functionality
+        clear_btn = Element('clearBtn')
+        def clear_output(event):
+            Element('output').inner_html = ''
+            Element('outputSection').attributes['style'] = 'display: none;'
+        
+        clear_btn.element.onclick = clear_output
+
+        # Load games on page load
+        await load_games()
+    </py-script>
 </body>
 </html>
